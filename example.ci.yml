@@ -1,0 +1,37 @@
+# .ci.yml — place this in the root of any repo you want to run CI on
+# ─────────────────────────────────────────────────────────────────────────────
+# The CI runner will look for this file after cloning.
+# If it's absent, a default install → lint → test pipeline is used.
+
+name: Python CI
+
+on:
+  - push
+  - pull_request
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+
+steps:
+  - name: install dependencies
+    run: pip install -r requirements.txt
+
+  - name: lint
+    run: flake8 . --max-line-length=120
+    continue-on-error: true
+
+  - name: type-check
+    run: mypy . --ignore-missing-imports
+    continue-on-error: true
+
+  - name: run tests
+    run: pytest -v --tb=short
+
+  # ── Optional extras ─────────────────────────────────────────────────────────
+  # - name: build docker image
+  #   run: docker build -t myapp:${GITHUB_SHA:-local} .
+  #
+  # - name: security scan
+  #   run: bandit -r . -ll
+  #   continue-on-error: true

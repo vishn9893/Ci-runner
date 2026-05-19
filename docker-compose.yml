@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  runner:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-changeme}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - USE_DOCKER=false          # set to true if Docker-in-Docker is configured
+      - DOCKER_IMAGE=python:3.12-slim
+      - LOG_DIR=/var/log/ci-runner
+    volumes:
+      - ./logs:/var/log/ci-runner
+      - /var/run/docker.sock:/var/run/docker.sock   # needed if USE_DOCKER=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
